@@ -9,6 +9,7 @@ import { HashModule } from 'src/utility/common/hash/hash.module';
   imports: [TypeOrmModule.forFeature([UserEntity]) , HashModule], 
   controllers: [UsersController],
   providers: [UsersService],
+  exports:[UsersService]
 })
 export class UsersModule {}
 

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
@@ -6,6 +6,8 @@ import { HashService } from 'src/utility/common/hash/hash.service';
 import { UserSignUpDto } from './dto/user-signUp.dto';
 import { UserSignInDto } from './dto/user-signIn.dto';
 import { sign } from 'jsonwebtoken';
+import { UserUpdateDto } from './dto/user-update.dto';
+import { Roles } from 'src/utility/common/enums/user-role.enum';
 
 @Injectable()
 export class UsersService {
@@ -47,25 +49,24 @@ export class UsersService {
     return sanitizedUser;
   }
 
-
-  create() {
-    return 'This action adds a new user';
+  async findAll() : Promise<UserEntity[]> {
+    const users = await this.usersRepository.find();
+    if (!users || users.length === 0) throw new NotFoundException('No users found');
+    return users;
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findOne(id: number) : Promise<UserEntity> {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) throw new NotFoundException('User not found');
+    return user ;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
 
-  update(id: number) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) : Promise<{ message: string }> {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) throw new BadRequestException('User not found');
+    await this.usersRepository.delete(id);
+    return { message: 'User deleted successfully' };
   }
 
   async findUserByEmail(email: string){
