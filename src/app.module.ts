@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppDataSourceOptions } from 'db/data-source'; // Adjust the import path as necessary
 import { UsersModule } from './users/users.module';
 import { CurrentUserMiddleware } from './utility/middlewares/current-user.middleware';
+import { CategoriesModule } from './categories/categories.module';
+import { ProductsModule } from './products/products.module';
 
 
 
@@ -21,6 +23,8 @@ import { CurrentUserMiddleware } from './utility/middlewares/current-user.middle
     }),
     TypeOrmModule.forRoot(AppDataSourceOptions),
     UsersModule,
+    CategoriesModule,
+    ProductsModule,
   ],
   controllers: [],
   providers: [],

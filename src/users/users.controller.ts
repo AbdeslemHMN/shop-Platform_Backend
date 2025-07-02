@@ -1,11 +1,14 @@
-import { Controller, Get, Post, Body,Param, Delete, ParseIntPipe, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body,Param, Delete, ParseIntPipe, Put, UseGuards, Patch } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserSignUpDto } from './dto/user-signUp.dto';
 import { UserEntity } from './entities/user.entity';
 import { UserSignInDto } from './dto/user-signIn.dto';
-import { UserUpdateDto } from './dto/user-update.dto';
-import { currentUser } from 'src/utility/decorators/current-user.decorator';
+import { CurrentUser } from 'src/utility/decorators/current-user.decorator';
 import { AuthenticationGuard } from 'src/utility/guards/authentication.guard';
+import { AuthorizeRoles } from 'src/utility/decorators/authorize-role.decorator';
+import { Roles } from 'src/utility/common/enums/user-role.enum';
+import { AuthorizationGuard } from 'src/utility/guards/authorization.guard';
+import { UserUpdateDto } from './dto/user-update.dto';
 
 
 @Controller('users')
@@ -30,6 +33,8 @@ export class UsersController {
     }
 
     // @desc Get all users
+    // @AuthorizeRoles(Roles.ADMIN)
+    @UseGuards(AuthenticationGuard , AuthorizationGuard([Roles.ADMIN]))
     @Get('all')
     async findAll() : Promise<UserEntity[]> {
         return await this.usersService.findAll();
@@ -42,6 +47,7 @@ export class UsersController {
     }
 
     //@desc delete a user by ID
+    @UseGuards(AuthenticationGuard)
     @Delete('single/:id')
     async remove(@Param('id',ParseIntPipe) id: string) {
         return await this.usersService.remove(+id);
@@ -49,10 +55,16 @@ export class UsersController {
 
     @UseGuards(AuthenticationGuard)
     @Get('me')
-    getProfile(@currentUser() currentUser: UserEntity): UserEntity {
+    getProfile(@CurrentUser() currentUser: UserEntity): UserEntity {
         if (!currentUser) {
             throw new Error('No user is authenticated');
         }
         return currentUser;
+    }
+
+    @UseGuards(AuthenticationGuard, AuthorizationGuard([Roles.ADMIN]))
+    @Patch('update/:id')
+    async update(@Param('id', ParseIntPipe) id: string, @Body() updateUserDto: Partial<UserUpdateDto>, @CurrentUser() currentUser: UserEntity): Promise<Omit<UserEntity, 'password'>> {
+        return await this.usersService.update(+id, updateUserDto, currentUser);
     }
 }

@@ -24,7 +24,7 @@ async function bootstrap() {
   }
   ); // Enable CORS for all routes
 
-    app.use(responseTime());
+  app.use(responseTime());
 
 
   await app.listen(PORT).then(() => {

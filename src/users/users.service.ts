@@ -61,6 +61,34 @@ export class UsersService {
     return user ;
   }
 
+  async update(id: number, updateUserDto: Partial<UserUpdateDto> , currentUser : UserEntity) : Promise<Omit<UserEntity, 'password'>> {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) throw new NotFoundException('User not found');
+
+    if (!currentUser.role.includes(Roles.ADMIN) && currentUser.id !== user.id) {
+      throw new BadRequestException('You are not authorized to update this user');
+    }
+
+    if( updateUserDto?.email ) {
+      const existingUser = await this.findUserByEmail(updateUserDto.email);
+      if (existingUser && existingUser.id !== user.id) {
+        throw new BadRequestException('Email already in use by another user');
+      }
+    }
+
+    if( updateUserDto?.role && !currentUser?.role.includes(Roles.ADMIN)) {
+      throw new BadRequestException('You are not authorized to change user roles');
+    }
+
+    if (updateUserDto?.password) {
+      updateUserDto.password = await this.hashService.hashPassword(updateUserDto.password);
+    }
+
+    Object.assign(user, updateUserDto);
+    const updatedUser = await this.usersRepository.save(user);
+    const { password, ...sanitizedUser } = updatedUser; // Exclude password from the response
+    return sanitizedUser;
+  }
 
   async remove(id: number) : Promise<{ message: string }> {
     const user = await this.usersRepository.findOneBy({ id });
