@@ -9,6 +9,5 @@ import { CategoryEntity } from './entities/category.entity';
   controllers: [CategoriesController],
   providers: [CategoriesService],
   exports: [CategoriesService],
-  // The CategoriesService is exported so it can be used in other modules if needed
 })
 export class CategoriesModule {}
