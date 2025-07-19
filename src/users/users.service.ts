@@ -97,6 +97,7 @@ export class UsersService {
     return { message: 'User deleted successfully' };
   }
 
+
   async findUserByEmail(email: string){
     return await this.usersRepository.findOneBy({ email });
   }

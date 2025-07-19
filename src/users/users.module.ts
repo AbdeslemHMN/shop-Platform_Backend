@@ -10,6 +10,7 @@ import { HashModule } from 'src/utility/common/hash/hash.module';
   controllers: [UsersController],
   providers: [UsersService],
   exports:[UsersService]
+  
 })
 export class UsersModule {}
 

@@ -1,5 +1,7 @@
 import { CategoryEntity } from "src/categories/entities/category.entity";
+import { OrderEntity } from "src/orders/entities/order.entity";
 import { ProductEntity } from "src/products/entities/product.entity";
+import { ReviewEntity } from "src/reviews/entities/review.entity";
 import { Roles } from "src/utility/common/enums/user-role.enum";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
 
@@ -32,5 +34,14 @@ export class UserEntity {
 
     @OneToMany(() => ProductEntity, (product) => product.addedBy)
     products: ProductEntity[];
+
+    @OneToMany(()=> ReviewEntity, (review) => review.user)
+    reviews: ReviewEntity[];
+
+    @OneToMany(() => OrderEntity , (order) => order.user)
+    orders: OrderEntity[];
+
+    @OneToMany(() => OrderEntity, (order) => order.ordersUpdatedBy)
+    ordersUpdatedBy: OrderEntity[];
 
 }
