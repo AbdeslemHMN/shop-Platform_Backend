@@ -29,7 +29,7 @@ export class ProductsService {
   }
 
   async findAll(query: any) : Promise<{products : any[]; totalProducts ; limit }> {
-    let filteredTotalProducts : number
+    // let filteredTotalProducts : number
     let limit : number
     if (!query.limit) {
       limit = 4; // Default limit
@@ -55,7 +55,7 @@ export class ProductsService {
     }
 
     if(query.categoryId) {
-      queryBuilder.andWhere('categoryId = :categoryId', {
+      queryBuilder.andWhere('category.id = :categoryId', {
         categoryId: query.categoryId
       });
     }
@@ -63,13 +63,13 @@ export class ProductsService {
     if(query.minPrice){
       queryBuilder.andWhere('product.price >= :minPrice', {
         minPrice: query.minPrice
-      });
+      }).orderBy('product.price', 'ASC');
     }
 
     if(query.maxPrice){
       queryBuilder.andWhere('product.price <= :maxPrice', {
         maxPrice: query.maxPrice
-      });
+      }).orderBy('product.price', 'ASC');
     }
 
     if(query.minRating){
@@ -83,7 +83,13 @@ export class ProductsService {
       });
     }
     queryBuilder.limit(limit);
+
+    if(query.offset) {
+      queryBuilder.offset(query.offset);
+    } 
+
     const totalProducts = await queryBuilder.getCount();
+
     const products = await queryBuilder.getRawMany();
 
 
