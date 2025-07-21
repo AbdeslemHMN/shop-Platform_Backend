@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { UserEntity } from 'src/users/entities/user.entity';
@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { CategoriesService } from 'src/categories/categories.service';
 import { OrderStatus } from 'src/utility/common/enums/order-status.entity';
 import dataSource from 'db/data-source';
+import { OrdersService } from 'src/orders/orders.service';
 
 @Injectable()
 export class ProductsService {
@@ -16,6 +17,8 @@ export class ProductsService {
     @InjectRepository(ProductEntity)
     private readonly productRepository : Repository<ProductEntity>,
     private readonly categoryService : CategoriesService,
+    @Inject(forwardRef(() => OrdersService))
+    private readonly ordersService : OrdersService,
   ) {}
 
   async create(createProductDto: CreateProductDto ,currentUser : UserEntity) : Promise<ProductEntity> {
@@ -137,8 +140,13 @@ export class ProductsService {
     
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: number) {
+    const product = await this.findOne(id);
+    const orders = await this.ordersService.findByProductId(id);
+    if (orders.length > 0) {
+      throw new BadRequestException(`Product with id ${id} cannot be deleted because it is associated with existing orders`);
+    }
+    return await this.productRepository.remove(product);
   }
 
   async updateStock(id:number , stock : number, status : OrderStatus ) : Promise<ProductEntity> {

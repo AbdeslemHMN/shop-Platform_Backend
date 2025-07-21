@@ -40,6 +40,7 @@ export class ProductsController {
     return await this.productsService.update(+id, updateProductDto , CurrentUser);
   }
 
+  @UseGuards(AuthenticationGuard , AuthorizationGuard([Roles.ADMIN]))
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productsService.remove(+id);
